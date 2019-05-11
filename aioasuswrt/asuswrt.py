@@ -53,6 +53,8 @@ _ARP_REGEX = re.compile(
 _RX_COMMAND = 'cat /sys/class/net/eth0/statistics/rx_bytes'
 _TX_COMMAND = 'cat /sys/class/net/eth0/statistics/tx_bytes'
 
+_LINK_INTERNET_CMD = 'nvram get link_internet'
+
 Device = namedtuple('Device', ['mac', 'ip', 'name'])
 
 
@@ -238,6 +240,16 @@ class AsusWrt:
         rx, tx = await self.async_get_current_transfer_rates(use_cache)
 
         return "%s/s" % convert_size(rx), "%s/s" % convert_size(tx)
+
+    async def async_get_link_internet(self):
+        """Gets current internet link state
+        
+        state meaning
+        1     internet connection not available: WAN cable is unplugged, ISP DHCP disfunction...
+        2     internet connection available (OK state)
+        """
+        data = await self.connection.async_run_command(_LINK_INTERNET_CMD)
+        return int(data[0])
 
     @property
     def is_connected(self):
